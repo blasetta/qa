@@ -3,541 +3,511 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Practice Quiz</title>
+    <title id="main-title">AWS Technical Quiz</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles for the application */
         body {
             font-family: 'Roboto', sans-serif;
         }
-        /* Styles for the explanation box transition */
+        /* Custom transition for the explanation box */
         .explanation-box {
-            transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-        }
-        .explanation-box.visible {
-            max-height: 500px; /* Adjust as needed for content */
-            opacity: 1;
-        }
-        /* Styles for the option button states */
-        .option-btn.selected {
-            border-color: #3b82f6; /* blue-500 */
-            border-width: 2px;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-        .option-btn.correct {
-            background-color: #dcfce7; /* green-100 */
-            border-color: #22c55e; /* green-500 */
-            color: #15803d; /* green-700 */
-        }
-        .option-btn.incorrect {
-            background-color: #fee2e2; /* red-100 */
-            border-color: #ef4444; /* red-500 */
-            color: #b91c1c; /* red-700 */
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform: translateY(-10px);
         }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <!-- Main Quiz Container -->
-    <div id="quiz-container" class="container mx-auto p-4 md:p-8" style="max-width: 1500px;">
-        <!-- Header: Title, Score, Timer, Reset -->
-        <header class="bg-white p-4 rounded-lg shadow-md mb-6">
-            <div class="flex flex-wrap justify-between items-center gap-4">
-                <h1 id="main-title" class="text-2xl md:text-3xl font-bold text-gray-700"></h1>
-                <div class="flex items-center gap-3">
-                    <div id="scoreboard" class="text-sm font-semibold bg-blue-100 text-blue-800 px-3 py-1 rounded-lg">Score: 0 / 0</div>
-                    <div id="timer" class="text-sm font-mono bg-gray-200 px-3 py-1 rounded-lg">00:00:00</div>
-                    <button id="reset-quiz-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg transition-colors text-sm">Reset Quiz</button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main content for questions -->
-        <main id="questions-wrapper">
-            <!-- Questions will be dynamically injected here by JavaScript -->
-        </main>
-
-        <!-- Navigation Controls -->
-        <nav id="navigation-controls" class="mt-6 flex justify-between items-center bg-white p-3 rounded-lg shadow-md">
-            <button id="prev-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">Previous</button>
-            <div class="flex items-center gap-2">
-                <label for="question-jump" class="text-sm font-medium">Jump to:</label>
-                <select id="question-jump" class="border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></select>
-            </div>
-            <button id="next-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed">Next</button>
-        </nav>
-    </div>
-    
-    <!-- GDPR/Cookie Consent Modal -->
-    <div id="gdpr-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-40"></div>
-    <div id="gdpr-modal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl p-6 md:p-8 w-11/12 md:max-w-lg z-50">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Privacy & Cookie Notice</h2>
-        <div class="text-gray-700 space-y-3">
-            <p>Welcome! This website is for demonstration and testing purposes only.</p>
-            <p>We use a single, functional cookie on this site for one reason: <strong class="font-semibold">to save your quiz progress.</strong></p>
-            <ul class="list-disc list-inside space-y-2 pl-2">
-                <li>This allows you to close the page and resume the quiz later exactly where you left off.</li>
-                <li>This cookie is automatically deleted when you click the <strong class="font-semibold">"Reset Quiz"</strong> button.</li>
-                <li>We <strong class="font-semibold">do not</strong> use any tracking, advertising, or analytics cookies. Your activity is not monitored or shared.</li>
-            </ul>
-            <p class="mt-4">By clicking "Accept and Continue," you acknowledge and agree to the use of this functional cookie.</p>
-        </div>
-        <div class="mt-6 text-right">
-            <button id="accept-gdpr-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Accept and Continue</button>
+    <!-- GDPR Consent Modal -->
+    <div id="gdpr-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">Cookie Consent</h3>
+            <p class="mb-6">We use a single functional cookie to save your quiz progress. This allows you to pick up where you left off. By clicking "Accept and Continue," you agree to the use of this cookie.</p>
+            <button id="accept-gdpr" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">Accept and Continue</button>
         </div>
     </div>
 
     <!-- Reset Confirmation Modal -->
-    <div id="reset-confirm-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-40"></div>
-    <div id="reset-confirm-modal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl p-6 md:p-8 w-11/12 md:max-w-md z-50">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Confirm Reset</h2>
-        <p class="text-gray-700">Are you sure you want to reset the quiz? All your progress will be lost.</p>
-        <div class="mt-6 flex justify-end gap-4">
-            <button id="cancel-reset-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors">Cancel</button>
-            <button id="confirm-reset-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Yes, Reset</button>
+    <div id="reset-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">Reset Quiz?</h3>
+            <p class="mb-6">Are you sure you want to reset the quiz? All your progress, including your score and saved answers, will be lost.</p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-reset" class="bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors">Cancel</button>
+                <button id="confirm-reset" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">Confirm Reset</button>
+            </div>
         </div>
     </div>
 
-    <!-- Main application logic -->
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <!-- Header -->
+        <header class="bg-white p-4 rounded-xl shadow-md mb-8 flex flex-wrap items-center justify-between gap-4">
+            <h1 id="header-title" class="text-2xl md:text-3xl font-bold text-blue-800">AWS Technical Quiz</h1>
+            <div class="flex items-center space-x-4">
+                <div id="score-container" class="text-lg font-medium hidden">
+                    <span class="font-bold">Score:</span>
+                    <span id="score">0 / 5</span>
+                </div>
+                <div class="text-lg font-medium">
+                    <span class="font-bold">Time:</span>
+                    <span id="timer">00:00:00</span>
+                </div>
+                <button id="reset-quiz-btn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors hidden">Reset Quiz</button>
+            </div>
+        </header>
+
+        <!-- Main Content: Question Card -->
+        <main id="quiz-container" class="bg-white p-6 md:p-8 rounded-xl shadow-md">
+            <!-- Question content will be dynamically inserted here -->
+        </main>
+
+        <!-- Footer Navigation -->
+        <footer class="mt-8 flex items-center justify-between">
+            <button id="prev-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">Previous</button>
+            <div class="flex items-center space-x-2">
+                <label for="jump-to" class="font-medium">Jump to:</label>
+                <select id="jump-to" class="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-200 disabled:cursor-not-allowed"></select>
+            </div>
+            <button id="submit-quiz-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hidden">Submit Quiz</button>
+            <button id="next-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">Next</button>
+        </footer>
+    </div>
+
     <script>
-        // --- DATA SOURCE ---
-        const main_title = "AWS SysOps Practice Quiz";
-        const questions = [
-            {
-                "number": 1, "title": "EC2 Connectivity Timeout", "scenario": "A SysOps administrator launches a new Amazon EC2 Linux instance into a public subnet. The instance is running, and the administrator has its public IP address. However, every attempt to connect remotely (e.g., via SSH) results in a connection timeout error.", "questionText": "Which action will allow the SysOps administrator to remotely connect to the instance?", "isMultiChoice": false, "options": [{"letter":"A","text":"Add a route table entry in the public subnet for the SysOps administrator's IP address."},{"letter":"B","text":"Add an outbound network ACL rule to allow TCP port 22 for the SysOps administrator's IP address."},{"letter":"C","text":"Modify the instance security group to allow inbound SSH traffic from the SysOps administrator's IP address."},{"letter":"D","text":"Modify the instance security group to allow outbound SSH traffic to the SysOps administrator's IP address."}],"correctAnswers":["C"],"explanation":"Correct Answer: C \nExplanation: A connection timeout error is a classic sign that a firewall is blocking the traffic before it can reach the destination. In AWS, the primary firewall protecting an EC2 instance is its Security Group. By default, security groups deny all inbound traffic. To connect to a Linux instance using SSH, you must explicitly allow inbound traffic on TCP port 22. Modifying the security group to add an inbound rule for port 22 from the administrator's specific IP address is the correct and most secure solution.","wrongExplanation":"Why the others are wrong: \nA: Route tables control the flow of traffic between subnets and to destinations outside the VPC (like the internet via an Internet Gateway). They do not filter traffic to a specific instance based on port or IP. The instance is in a public subnet, which should already have a route to the Internet Gateway. \nB: This is incorrect for two reasons. First, the problem is with inbound traffic to the instance, not outbound. Second, Network ACLs are stateless, but they are less commonly the cause of initial connection issues than security groups. The default Network ACL allows all traffic. \nD: The connection attempt is an inbound request to the EC2 instance. An outbound rule controls traffic leaving the instance. While outbound rules are important, they are not the cause of this specific problem.","level":1
-            }, 
-            {
-                "number": 27, "title": "CloudFront Caching Issue", "scenario": "A SysOps administrator has configured an Amazon CloudFront distribution with an Application Load Balancer (ALB) as the origin to reduce load on the web servers. After a week, monitoring shows that requests are still being served directly by the ALB, and there's no change in the web server load.", "questionText": "What are possible causes for this problem? (CHOOSE TWO.)", "isMultiChoice": true, "options": [{"letter":"A","text":"CloudFront does not have the ALB configured as the origin access identity."},{"letter":"B","text":"The DNS is still pointing to the ALB instead of the CloudFront distribution."},{"letter":"C","text":"The ALB security group is not permitting inbound traffic from CloudFront."},{"letter":"D","text":"The default, minimum, and maximum Time to Live (TTL) are set to 0 seconds on the CloudFront distribution."},{"letter":"E","text":"The target groups associated with the ALB are configured for sticky sessions."}],"correctAnswers":["B", "D"],"explanation":"Correct Answers: B and D \nExplanation:\nThe problem is that CloudFront is not caching or serving the traffic as expected. Why B is correct: If the public DNS record (e.g., www.example.com) still points directly to the ALB's DNS name, users will bypass CloudFront entirely. For CloudFront to serve traffic, the public DNS record must be updated to point to the CloudFront distribution's domain name (e.g., d12345.cloudfront.net). Why D is correct: The Time to Live (TTL) setting in CloudFront's cache behavior tells CloudFront how long to cache an object at the edge location before checking with the origin (the ALB) again. If the TTL is set to 0, CloudFront will forward every single request to the ALB to check for an updated version. This effectively disables caching and would result in no load reduction on the origin servers.","wrongExplanation":"Why A is incorrect: Origin Access Identity (OAI) is used to restrict access to S3 bucket origins, not ALB origins. For an ALB, you would typically use custom headers and security group rules to restrict access. \nWhy C is incorrect: If the ALB security group blocked traffic from CloudFront, users would receive errors (e.g., 502 Bad Gateway) from CloudFront. The problem described is that traffic is still being served, just not from the cache. \nWhy E is incorrect: Sticky sessions on the ALB ensure that a user is consistently routed to the same backend EC2 instance. This would not prevent CloudFront from caching content.","level":1
-            },
-            {
-                "number": 3, "title": "Auto Scaling Cooldown Period", "scenario": "A SysOps administrator has an Auto Scaling group using a simple scaling policy based on the RequestCountPerTarget metric. The administrator observes that the metric threshold was breached twice within a 180-second period. The Auto Scaling group is using default settings.", "questionText": "How will the number of EC2 instances in this Auto Scaling group be affected in this scenario?", "isMultiChoice": false, "options": [{"letter":"A","text":"The Auto Scaling group will launch an additional EC2 instance every time the RequestCount Per Target metric exceeds the predefined limit."},{"letter":"B","text":"The Auto Scaling group will launch one EC2 instance and will wait for the default cooldown period before launching another instance."},{"letter":"C","text":"The Auto Scaling group will send an alert to the ALB to rebalance the traffic and not add new EC2 instances until the load is normalized."},{"letter":"D","text":"The Auto Scaling group will try to distribute the traffic among all EC2 instances before launching another instance."}],"correctAnswers":["B"],"explanation":"Correct Answer: B \nExplanation: Simple scaling policies have a cooldown period to prevent the Auto Scaling group from launching or terminating additional instances before the effects of a previous scaling activity are visible. The default cooldown period is 300 seconds (5 minutes). When the first alarm triggers, the Auto Scaling group launches a new instance and enters the cooldown period. Even though the alarm triggers again 180 seconds later, the group will ignore it because it is still within the 300-second cooldown period. It will not launch a second instance until the cooldown expires.","wrongExplanation":"Why the others are wrong: \nA: This describes behavior without a cooldown period, which is incorrect for simple scaling policies. The cooldown period is specifically designed to prevent this kind of rapid, potentially excessive scaling. \nC: The Auto Scaling group's primary function is to adjust the number of instances, not to directly instruct the ALB to rebalance traffic. The ALB will automatically rebalance traffic as new instances become healthy. \nD: The ALB is responsible for distributing traffic. The Auto Scaling group's role is to add or remove instances based on the scaling policy.","level":1
-            },
-            {
-                "number": 4, "title": "Database Failover", "scenario": "A company's application uses a single Amazon RDS DB instance. They are concerned about the lack of a failover solution and need to implement one that is automatic and does not lose any committed transactions in the event of a disaster.", "questionText": "Which solution will meet these requirements?", "isMultiChoice": false, "options": [{"letter":"A","text":"Create an RDS read replica in the same AWS Region."},{"letter":"B","text":"Create an RDS read replica in a different AWS Region."},{"letter":"C","text":"Modify the DB instance to be a Multi-AZ deployment."},{"letter":"D","text":"Set up a CloudWatch alarm to restart the DB instance if memory utilization is high."}],"correctAnswers":["C"],"explanation":"Correct Answer: C \nExplanation: The requirements are for automatic failover and no data loss (zero RPO - Recovery Point Objective). The AWS feature designed specifically for this is an RDS Multi-AZ deployment. When you enable Multi-AZ, RDS automatically provisions and maintains a synchronous standby replica in a different Availability Zone (AZ). All database writes are synchronously replicated to the standby. If the primary database fails, RDS automatically fails over to the standby replica without any manual intervention and without losing any committed data.","wrongExplanation":"Why the others are wrong: \nA & B: Read replicas are primarily for scaling read traffic, not for high availability. They use asynchronous replication, which means there is a small delay (replication lag). In a failover, any data committed to the primary that hasn't yet been replicated to the replica would be lost. Furthermore, promoting a read replica to be the new primary is a manual process (or requires custom automation), not an automatic one. \nD: This is a monitoring solution, not a high-availability or failover solution. Restarting an instance due to high memory usage does not protect against an underlying host or AZ failure and would cause downtime.","level":2
-            },
-            {
-                "number": 5, "title": "Centralized Policy Enforcement", "scenario": "A company uses AWS Organizations with separate Organizational Units (OUs) for production and development. A corporate policy dictates that developers can only use a specific list of approved AWS services within the production account.", "questionText": "What is the MOST operationally efficient solution to control the production account?", "isMultiChoice": false, "options": [{"letter":"A","text":"Create a customer managed policy in AWS Identity and Access Management (IAM). Apply the policy to all users within the production account."},{"letter":"B","text":"Create a job function policy in AWS Identity and Access Management (IAM). Apply the policy to all users within the production OU."},{"letter":"C","text":"Create a service control policy (SCP). Apply the SCP to the production OU."},{"letter":"D","text":"Create an IAM policy. Apply the policy in Amazon API Gateway to restrict the production account."}],"correctAnswers":["C"],"explanation":"Correct Answer: C \nExplanation: Service Control Policies (SCPs) are a feature of AWS Organizations designed for this exact purpose. SCPs offer central control over the maximum available permissions for all accounts in your organization. By attaching an SCP to the production OU that explicitly denies access to all services except the approved ones, you create a preventative guardrail. This policy applies to all IAM users and roles in every account within that OU, including the root user, ensuring consistent enforcement with maximum operational efficiency.","wrongExplanation":"Why the others are wrong: \nA & B: Using IAM policies is less efficient. You would need to ensure that every single IAM user and role in the production account has this policy attached. It's easy for a new user or role to be created without the policy, leading to a security gap. SCPs provide a top-down enforcement that cannot be overridden by IAM administrators within the account. \nD: Amazon API Gateway is a service for creating, publishing, and securing APIs. It has no capability to enforce broad service-level permissions for an entire AWS account.","level":3
-            }
-        ];
-       
-        // --- STATE MANAGEMENT ---
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let userSelections;
-        let answeredCorrectly;
-        
-        // Timer state
-        let timerInterval;
-        let totalSeconds = 0;
-        let inactivityTimer;
-        let userHasInteracted = false;
-
-        // --- DOM ELEMENTS ---
-        const mainTitleEl = document.getElementById('main-title');
-        const scoreboardEl = document.getElementById('scoreboard');
-        const questionsWrapperEl = document.getElementById('questions-wrapper');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const questionJumpEl = document.getElementById('question-jump');
-        const resetQuizBtn = document.getElementById('reset-quiz-btn');
-        const timerEl = document.getElementById('timer');
-        const resetConfirmModal = document.getElementById('reset-confirm-modal');
-        const resetConfirmOverlay = document.getElementById('reset-confirm-overlay');
-        const cancelResetBtn = document.getElementById('cancel-reset-btn');
-        const confirmResetBtn = document.getElementById('confirm-reset-btn');
-
-        // --- COOKIE HELPERS ---
-        function setCookie(name, value, days) {
-            let expires = "";
-            if (days) {
-                const date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
-            }
-            document.cookie = name + "=" + (JSON.stringify(value) || "") + expires + "; path=/; SameSite=Lax";
-        }
-
-        function getCookie(name) {
-            const nameEQ = name + "=";
-            const ca = document.cookie.split(';');
-            for (let i = 0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) == 0) {
-                    try {
-                        return JSON.parse(c.substring(nameEQ.length, c.length));
-                    } catch (e) {
-                        return null;
-                    }
-                }
-            }
-            return null;
-        }
-
-        function deleteCookie(name) {
-            document.cookie = name + '=; Max-Age=-99999999; path=/; SameSite=Lax';
-        }
-
-        // --- STATE PERSISTENCE ---
-        function saveState() {
-            const state = {
-                currentQuestionIndex,
-                score,
-                userSelections,
-                answeredCorrectly,
-                totalSeconds
-            };
-            setCookie('quizState', state, 7);
-        }
-
-        function loadState() {
-            const savedState = getCookie('quizState');
-            if (savedState) {
-                currentQuestionIndex = savedState.currentQuestionIndex || 0;
-                score = savedState.score || 0;
-                userSelections = savedState.userSelections || Array(questions.length).fill(null).map(() => []);
-                answeredCorrectly = savedState.answeredCorrectly || Array(questions.length).fill(false);
-                totalSeconds = savedState.totalSeconds || 0;
-                userHasInteracted = true;
-                return true;
-            } 
-            return false;
-        }
-
-        // --- INITIALIZATION ---
+        const main_title = "AWS SysOps Test Quiz";
+        const cookie_name = main_title.replace(/\s+/g, '_'); // Create a valid cookie name
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('main-title').textContent = main_title;
+            document.getElementById('header-title').textContent = main_title;
+            // --- DATA ---
+            const questions = [
+                { "number": 1, "title": "EC2 Connectivity Timeout", "scenario": "You have launched an Amazon EC2 instance into a public subnet. When you try to connect to it via SSH from your corporate network, the connection times out. The instance's security group allows inbound traffic on port 22 from your company's IP address range. The subnet's network ACL (NACL) has the default settings.", "questionText": "What is the most likely cause of the connectivity issue?", "isMultiChoice": false, "options": { "A": "The route table associated with the subnet does not have a route to an Internet Gateway.", "B": "The instance was not assigned a public IP address upon launch.", "C": "The NACL is blocking outbound traffic on ephemeral ports.", "D": "The security group is stateful and does not require an outbound rule." }, "correctAnswers": ["A"], "explanation": "A connection timeout typically points to a networking issue. If the security group and NACL are correctly configured for inbound traffic, the problem often lies in the return path. An EC2 instance in a public subnet needs a route to an Internet Gateway (IGW) in its subnet's route table to communicate with the internet. Without it, SSH responses cannot be sent back to the client, causing a timeout.", "wrongExplanation": "While other options can cause issues, the lack of an IGW route is the most common reason for timeouts when inbound rules are correct. A missing public IP would result in a 'host not found' error, not a timeout. The default NACL allows all outbound traffic. Security groups being stateful is a feature, not a problem.", "level": 1 },
+                { "number": 2, "title": "CloudFront Caching Issue", "scenario": "A web application hosted on Amazon S3 is served through Amazon CloudFront. You recently updated an image file in the S3 bucket, but users are still seeing the old version of the image.", "questionText": "Which two actions can you take to force CloudFront to serve the updated image?", "isMultiChoice": true, "correctAnswersCount": 2, "options": { "A": "Restart all edge location servers from the AWS console.", "B": "Perform a CloudFront invalidation for the specific image file path.", "C": "Change the S3 bucket policy to deny access to the old file.", "D": "Use versioning for your files in S3 and update the object URL in your application.", "E": "Increase the TTL (Time to Live) for the cache behavior." }, "correctAnswers": ["B", "D"], "explanation": "CloudFront caches objects for their TTL period. To serve a new version immediately, you can either invalidate the cached object's path (e.g., '/images/logo.png'), which forces CloudFront to fetch the new version from the origin, or you can change the object's name. Using versioned filenames (e.g., 'logo_v2.png') is a best practice as it ensures that CloudFront sees a request for a new, uncached object.", "wrongExplanation": "You cannot restart edge locations. Changing the S3 bucket policy won't affect the cached version in CloudFront. Increasing the TTL would make the problem worse by extending the cache duration.", "level": 1 },
+                { "number": 3, "title": "Auto Scaling Cooldown Period", "scenario": "An Auto Scaling group is configured to launch new instances when the average CPU utilization exceeds 70%. After a traffic spike, the group scales out, but you notice that additional instances are launched even after the average CPU has dropped below the threshold.", "questionText": "What is the primary purpose of the 'cooldown period' in an Auto Scaling group?", "isMultiChoice": false, "options": { "A": "To allow time for new instances to be terminated gracefully.", "B": "To prevent the Auto Scaling group from launching or terminating additional instances before the effects of a previous scaling activity are visible.", "C": "To set a minimum time an instance must be in service before it can be terminated.", "D": "To give CloudWatch more time to aggregate metrics." }, "correctAnswers": ["B"], "explanation": "The cooldown period ensures that after a scaling activity (like launching a new instance), the Auto Scaling group doesn't immediately initiate another scaling activity. It allows time for the newly launched instance to start handling traffic and for its metrics (like CPU utilization) to stabilize and be reported to CloudWatch. This prevents erratic scaling behavior, such as launching too many instances in rapid succession.", "wrongExplanation": "Graceful termination is handled by lifecycle hooks. The 'health check grace period' is for instance health checks, not scaling activities. CloudWatch aggregation periods are configured separately.", "level": 2 },
+                { "number": 4, "title": "Database Failover", "scenario": "A critical application uses a single-AZ Amazon RDS for PostgreSQL database instance. The AWS Region where the database is hosted experiences a complete Availability Zone (AZ) failure.", "questionText": "What is the state of the application's database, and what is required to restore service?", "isMultiChoice": false, "options": { "A": "The database will automatically failover to another AZ in the same region.", "B": "The database is unavailable, but an automated backup can be restored to a new instance in a different AZ.", "C": "The database is unavailable. Service can be restored by manually creating a new instance in a different AZ from a recent snapshot.", "D": "RDS automatically replicates the data to another region, and a failover can be initiated there." }, "correctAnswers": ["C"], "explanation": "A single-AZ RDS instance does not have a standby replica for automatic failover. If its AZ fails, the database becomes unavailable. The standard recovery method is to use a recent automated or manual snapshot to launch a new database instance in a different, operational AZ within the same region. This is a manual process. For automatic failover, a Multi-AZ deployment is required.", "wrongExplanation": "Automatic failover is a feature of Multi-AZ deployments only. While automated backups exist, restoring them is a manual action. Cross-region replication is a separate feature (Read Replicas) and is not the default behavior for a single-AZ instance.", "level": 2 },
+                { "number": 5, "title": "Centralized Policy Enforcement", "scenario": "A large enterprise has hundreds of AWS accounts managed under AWS Organizations. The security team wants to enforce a rule that prevents any IAM user from disabling AWS CloudTrail, regardless of their individual IAM permissions within their own account.", "questionText": "Which AWS feature should be used to enforce this policy across all accounts in the organization?", "isMultiChoice": false, "options": { "A": "IAM Permission Boundaries on all IAM roles.", "B": "A cross-account IAM role with deny permissions deployed to every account.", "C": "A Service Control Policy (SCP) attached to the organization's root or relevant OUs.", "D": "AWS Config rules to detect and alert when CloudTrail is disabled." }, "correctAnswers": ["C"], "explanation": "Service Control Policies (SCPs) are the primary mechanism in AWS Organizations for central governance. An SCP can set permission guardrails that apply to all accounts within an organization or an Organizational Unit (OU). By applying an SCP with an explicit deny for the 'cloudtrail:StopLogging' action, you can prevent any user or role (including account administrators) from performing that action, thus enforcing the policy centrally.", "wrongExplanation": "IAM Permission Boundaries define the maximum permissions a user can have but need to be applied individually. A cross-account role is complex to manage at scale. AWS Config is for detection and alerting, not prevention.", "level": 3 }
+            ];
+
+            // --- STATE MANAGEMENT ---
+            let state = {
+                currentQuestionIndex: 0,
+                score: 0,
+                userSelections: {}, // { 0: ['A'], 1: ['B', 'D'], ... }
+                isSubmitted: false, // New state to track if quiz is graded
+                totalSeconds: 0,
+                timerActive: false,
+                timerId: null,
+                inactivityTimerId: null
+            };
+
+            // --- DOM ELEMENTS ---
+            const quizContainer = document.getElementById('quiz-container');
+            const scoreContainer = document.getElementById('score-container');
+            const scoreEl = document.getElementById('score');
+            const timerEl = document.getElementById('timer');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const jumpToSelect = document.getElementById('jump-to');
+            const submitQuizBtn = document.getElementById('submit-quiz-btn');
+            const resetQuizBtn = document.getElementById('reset-quiz-btn');
             const gdprModal = document.getElementById('gdpr-modal');
-            const gdprOverlay = document.getElementById('gdpr-overlay');
-            const acceptGdprBtn = document.getElementById('accept-gdpr-btn');
+            const acceptGdprBtn = document.getElementById('accept-gdpr');
+            const resetModal = document.getElementById('reset-modal');
+            const cancelResetBtn = document.getElementById('cancel-reset');
+            const confirmResetBtn = document.getElementById('confirm-reset');
 
-            if (!getCookie('gdprAccepted')) {
-                gdprModal.classList.remove('hidden');
-                gdprOverlay.classList.remove('hidden');
-            }
-
-            acceptGdprBtn.addEventListener('click', () => {
-                gdprModal.classList.add('hidden');
-                gdprOverlay.classList.add('hidden');
-                setCookie('gdprAccepted', 'true', 365);
-            });
-
-            userSelections = Array(questions.length).fill(null).map(() => []);
-            answeredCorrectly = Array(questions.length).fill(false);
-
-            const stateLoaded = loadState();
-            setupQuiz();
-            addEventListeners();
-
-            if (stateLoaded) {
-                handleUserInteraction();
-            }
-        });
-
-        function setupQuiz() {
-            document.title = main_title;
-            mainTitleEl.textContent = main_title;
-            questionsWrapperEl.innerHTML = '';
-            questionJumpEl.innerHTML = '';
-
-            questions.forEach((q, index) => {
-                renderQuestion(q, index);
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `Question ${index + 1}`;
-                questionJumpEl.appendChild(option);
-            });
-
-            questions.forEach((q, index) => {
-                const selections = userSelections[index];
-                if (selections && selections.length > 0) {
-                    const qContainer = document.getElementById(`question-${index}`);
-                    selections.forEach(letter => {
-                        const btn = qContainer.querySelector(`.option-btn[data-letter="${letter}"]`);
-                        if (btn) {
-                            btn.classList.add('selected', 'font-bold');
-                        }
-                    });
-                    if (!answeredCorrectly[index]) {
-                         const confirmBtn = qContainer.querySelector('.confirm-btn');
-                         confirmBtn.disabled = userSelections[index].length !== q.correctAnswers.length;
-                    }
+            // --- COOKIE HELPERS ---
+            const setCookie = (name, value, days) => {
+                let expires = "";
+                if (days) {
+                    const date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    expires = "; expires=" + date.toUTCString();
                 }
-                if (answeredCorrectly[index]) {
-                    applyConfirmedState(index);
-                }
-            });
-            
-            updateScoreboard();
-            timerEl.textContent = formatTime(totalSeconds);
-            showQuestion(currentQuestionIndex, true);
-        }
-        
-        function addEventListeners() {
-            document.getElementById('quiz-container').addEventListener('click', (e) => {
-                handleUserInteraction();
-                dispatchInteraction(e);
-            });
-            document.getElementById('quiz-container').addEventListener('change', (e) => {
-                handleUserInteraction();
-                dispatchInteraction(e);
-            });
+                document.cookie = name + "=" + (JSON.stringify(value) || "") + expires + "; path=/; SameSite=Lax";
+            };
 
-            resetQuizBtn.addEventListener('click', showResetModal);
-
-            cancelResetBtn.addEventListener('click', hideResetModal);
-            confirmResetBtn.addEventListener('click', handleResetConfirmation);
-        }
-
-        // --- RENDERING ---
-        function renderQuestion(question, index) {
-            const questionContainer = document.createElement('div');
-            questionContainer.id = `question-${index}`;
-            questionContainer.className = 'question-container bg-white p-6 rounded-lg shadow-md mb-4 hidden';
-
-            const choiceText = `(Choose ${question.correctAnswers.length})`;
-            
-            let levelBadgeClass = '';
-            let levelText = '';
-            if (question.level) {
-                levelText = `Level ${question.level}`;
-                switch (question.level) {
-                    case 1:
-                        levelBadgeClass = 'bg-green-100 text-green-800';
-                        break;
-                    case 2:
-                        levelBadgeClass = 'bg-yellow-100 text-yellow-800';
-                        break;
-                    case 3:
-                        levelBadgeClass = 'bg-red-100 text-red-800';
-                        break;
-                    default:
-                        levelBadgeClass = 'bg-gray-100 text-gray-800';
-                }
-            }
-
-            questionContainer.innerHTML = `
-                <div class="flex justify-between items-center border-b pb-2 mb-4">
-                    <h2 class="text-xl font-bold text-gray-800">Question ${index + 1}</h2>
-                    ${question.level ? `<span class="text-sm font-semibold px-3 py-1 rounded-full ${levelBadgeClass}">${levelText}</span>` : ''}
-                </div>
-                <p class="text-gray-800 text-xl mb-4">${question.scenario}</p>
-                <p class="text-lg font-medium mb-4">${question.questionText} <span class="text-sm font-normal text-gray-500">${question.isMultiChoice ? choiceText : '(Choose one)'}</span></p>
-                <div class="options-grid grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                    ${question.options.map(opt => `
-                        <button class="option-btn w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors" data-question-index="${index}" data-letter="${opt.letter}">
-                            <span class="font-bold mr-2">${opt.letter}.</span> ${opt.text}
-                        </button>
-                    `).join('')}
-                </div>
-                <div class="mt-4 flex justify-between items-center">
-                    <button class="explanation-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed" data-question-index="${index}" disabled>Explanation</button>
-                    <button class="confirm-btn bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed" data-question-index="${index}" disabled>Confirm</button>
-                </div>
-                <div class="explanation-box mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p class="explanation-text whitespace-pre-wrap text-base"></p>
-                    <p class="wrong-explanation-text whitespace-pre-wrap text-base mt-2"></p>
-                </div>
-            `;
-
-            questionsWrapperEl.appendChild(questionContainer);
-        }
-
-        function applyConfirmedState(index) {
-            const question = questions[index];
-            const selections = userSelections[index];
-            const qContainer = document.getElementById(`question-${index}`);
-            const confirmBtn = qContainer.querySelector('.confirm-btn');
-            const explanationBtn = qContainer.querySelector('.explanation-btn');
-            const optionButtons = qContainer.querySelectorAll('.option-btn');
-
-            confirmBtn.disabled = true;
-            explanationBtn.disabled = false;
-            optionButtons.forEach(btn => btn.disabled = true);
-
-            optionButtons.forEach(btn => {
-                const letter = btn.dataset.letter;
-                if (question.correctAnswers.includes(letter)) {
-                    btn.classList.add('correct');
-                } else if (selections.includes(letter)) {
-                    btn.classList.add('incorrect');
-                }
-            });
-
-            const explanationBox = qContainer.querySelector('.explanation-box');
-            explanationBox.querySelector('.explanation-text').textContent = question.explanation;
-            explanationBox.querySelector('.wrong-explanation-text').textContent = question.wrongExplanation;
-        }
-
-        // --- LOGIC & EVENT HANDLERS ---
-        function handleOptionSelect(selectedBtn) {
-            const index = parseInt(selectedBtn.dataset.questionIndex);
-            const letter = selectedBtn.dataset.letter;
-            const question = questions[index];
-            const parent = selectedBtn.closest('.options-grid');
-
-            if (question.isMultiChoice) {
-                const currentSelections = userSelections[index];
-                const maxSelections = question.correctAnswers.length;
-
-                if (currentSelections.includes(letter)) {
-                    userSelections[index] = currentSelections.filter(l => l !== letter);
-                    selectedBtn.classList.remove('selected', 'font-bold');
-                } else {
-                    if (currentSelections.length >= maxSelections) {
-                        const oldestSelection = userSelections[index].shift();
-                        const oldestBtn = parent.querySelector(`.option-btn[data-letter="${oldestSelection}"]`);
-                        if (oldestBtn) {
-                            oldestBtn.classList.remove('selected', 'font-bold');
+            const getCookie = (name) => {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) === 0) {
+                        try {
+                            return JSON.parse(c.substring(nameEQ.length, c.length));
+                        } catch (e) {
+                            return c.substring(nameEQ.length, c.length);
                         }
                     }
-                    userSelections[index].push(letter);
-                    selectedBtn.classList.add('selected', 'font-bold');
                 }
-            } else {
-                parent.querySelectorAll('.option-btn').forEach(btn => {
-                    btn.classList.remove('selected', 'font-bold');
+                return null;
+            };
+
+            const eraseCookie = (name) => {
+                document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            };
+
+            // --- TIMER LOGIC ---
+            const formatTime = (totalSeconds) => {
+                const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+                const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+                const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+                return `${hours}:${minutes}:${seconds}`;
+            };
+
+            const stopTimer = () => {
+                if (state.timerId) {
+                    clearInterval(state.timerId);
+                    state.timerId = null;
+                    state.timerActive = false;
+                }
+            };
+            
+            const startTimer = () => {
+                if (state.timerActive || state.timerId) return; // Already running
+                state.timerActive = true;
+                state.timerId = setInterval(() => {
+                    state.totalSeconds++;
+                    timerEl.textContent = formatTime(state.totalSeconds);
+                    saveState();
+                }, 1000);
+            };
+
+            const resetInactivityTimer = () => {
+                if (!state.timerActive && state.totalSeconds > 0) {
+                    startTimer();
+                }
+                clearTimeout(state.inactivityTimerId);
+                state.inactivityTimerId = setTimeout(() => {
+                    stopTimer();
+                }, 3 * 60 * 1000); // 3 minutes
+            };
+
+            const handleFirstInteraction = () => {
+                if (!state.timerActive && state.totalSeconds === 0) {
+                    startTimer();
+                }
+                resetInactivityTimer();
+                document.body.removeEventListener('click', handleFirstInteraction);
+                document.body.removeEventListener('keydown', handleFirstInteraction);
+            };
+
+
+            // --- QUIZ LOGIC ---
+            const saveState = () => {
+                setCookie(cookie_name, state, 7); // Save for 7 days
+            };
+
+            const loadState = () => {
+                const savedState = getCookie(cookie_name);
+                if (savedState) {
+                    Object.assign(state, savedState);
+                    if(state.timerActive && !state.isSubmitted) {
+                       startTimer();
+                       resetInactivityTimer();
+                    } else if (state.totalSeconds > 0) {
+                       timerEl.textContent = formatTime(state.totalSeconds);
+                    }
+                    if (state.isSubmitted) {
+                        calculateScore();
+                    }
+                }
+            };
+            
+            const countCompletedQuestions = () => {
+                let completedCount = 0;
+                questions.forEach((question, index) => {
+                    const selections = state.userSelections[index] || [];
+                    const requiredCount = question.isMultiChoice ? question.correctAnswersCount : 1;
+                    if (selections.length >= requiredCount) {
+                        completedCount++;
+                    }
                 });
-                userSelections[index] = [letter];
-                selectedBtn.classList.add('selected', 'font-bold');
-            }
+                return completedCount;
+            };
+
+            const renderQuestion = () => {
+                const question = questions[state.currentQuestionIndex];
+                const selections = state.userSelections[state.currentQuestionIndex] || [];
+                
+                const getLevelBadgeClass = (level) => {
+                    switch (level) {
+                        case 1: return 'bg-green-100 text-green-800';
+                        case 2: return 'bg-yellow-100 text-yellow-800';
+                        case 3: return 'bg-red-100 text-red-800';
+                        default: return 'bg-gray-100 text-gray-800';
+                    }
+                };
+
+                let completionStatusHtml = '';
+                if (!state.isSubmitted) {
+                    const completedCount = countCompletedQuestions();
+                    const totalQuestions = questions.length;
+                    const requiredCount = question.isMultiChoice ? question.correctAnswersCount : 1;
+                    const isCurrentCompleted = selections.length >= requiredCount;
+                    
+                    if (isCurrentCompleted) {
+                        completionStatusHtml = `<span class="font-semibold px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">Completed (${completedCount}/${totalQuestions})</span>`;
+                    } else {
+                        const remainingCount = totalQuestions - completedCount;
+                        completionStatusHtml = `<span class="font-semibold px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">To complete (${remainingCount}/${totalQuestions})</span>`;
+                    }
+                }
+
+                let optionsHtml = '<div class="space-y-3">';
+                for (const key in question.options) {
+                    const isSelected = selections.includes(key);
+                    let optionClass = 'border-gray-300 hover:border-blue-500 hover:bg-blue-50';
+                    let resultIcon = '';
+
+                    if (state.isSubmitted) {
+                        const isCorrect = question.correctAnswers.includes(key);
+                        if (isSelected && isCorrect) {
+                            optionClass = 'border-green-500 bg-green-100 text-green-900 font-bold';
+                            resultIcon = `<span class="text-green-600">✔</span>`;
+                        } else if (isSelected && !isCorrect) {
+                            optionClass = 'border-red-500 bg-red-100 text-red-900 font-bold';
+                            resultIcon = `<span class="text-red-600">✖</span>`;
+                        } else if (isCorrect) {
+                            optionClass = 'border-green-500 bg-green-50';
+                            resultIcon = `<span class="text-green-600">✔</span>`;
+                        } else {
+                            optionClass = 'border-gray-200 bg-gray-50 text-gray-500';
+                        }
+                    } else if (isSelected) {
+                        optionClass = 'border-blue-600 ring-2 ring-blue-300 font-semibold';
+                    }
+                    
+                    optionsHtml += `
+                        <button data-option="${key}" class="option-btn w-full text-left p-4 border rounded-lg flex justify-between items-center transition-all ${optionClass} ${state.isSubmitted ? 'cursor-not-allowed' : 'cursor-pointer'}">
+                            <span><span class="font-bold mr-2">${key}.</span>${question.options[key]}</span>
+                            ${resultIcon}
+                        </button>
+                    `;
+                }
+                optionsHtml += '</div>';
+
+                quizContainer.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-sm font-bold text-gray-700">Question ${state.currentQuestionIndex + 1} of ${questions.length}</span>
+                        ${completionStatusHtml}
+                        <span class="text-sm font-medium px-3 py-1 rounded-full ${getLevelBadgeClass(question.level)}">Level ${question.level}</span>
+                    </div>
+                
+                    <p class="text-gray-600 mb-4 bg-gray-50 p-3 rounded-md">${question.scenario}</p>
+                    <p class="font-semibold mb-4">${question.questionText} ${question.isMultiChoice ? `(Select ${question.correctAnswersCount})` : ''}</p>
+                    ${optionsHtml}
+                    <div class="mt-6 flex flex-col sm:flex-row items-center justify-end gap-4">
+                        <button id="explanation-btn" class="w-full sm:w-auto text-blue-600 font-semibold py-2 px-4 rounded-lg hover:bg-blue-50 ${!state.isSubmitted ? 'hidden' : ''}">
+                            Show Explanation
+                        </button>
+                    </div>
+                    <div id="explanation-box" class="explanation-box hidden opacity-0 mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded-r-lg">
+                        <h4 class="font-bold mb-2">Explanation</h4>
+                        <p class="text-gray-700">${question.explanation}</p>
+                    </div>
+                `;
+
+                updateNavigation();
+                attachEventListenersToQuestion();
+            };
             
-            const confirmBtn = document.querySelector(`#question-${index} .confirm-btn`);
-            confirmBtn.disabled = userSelections[index].length !== question.correctAnswers.length;
-            saveState();
-        }
+            const checkAllQuestionsAnswered = () => {
+                if (state.isSubmitted) return false;
+                for (let i = 0; i < questions.length; i++) {
+                    const question = questions[i];
+                    const selections = state.userSelections[i] || [];
+                    const requiredCount = question.isMultiChoice ? question.correctAnswersCount : 1;
+                    if (selections.length < requiredCount) {
+                        return false;
+                    }
+                }
+                return Object.keys(state.userSelections).length === questions.length;
+            };
 
-        function handleConfirm(confirmBtn) {
-            const index = parseInt(confirmBtn.dataset.questionIndex);
-            const question = questions[index];
-            const selections = userSelections[index];
-            
-            const sortedSelections = [...selections].sort();
-            const sortedCorrect = [...question.correctAnswers].sort();
-            const isCorrect = JSON.stringify(sortedSelections) === JSON.stringify(sortedCorrect);
-            
-            if (isCorrect && !answeredCorrectly[index]) {
-                score++;
-                updateScoreboard();
-            }
-            
-            answeredCorrectly[index] = true;
-            applyConfirmedState(index);
-            saveState();
-        }
+            const updateNavigation = () => {
+                const question = questions[state.currentQuestionIndex];
+                const selections = state.userSelections[state.currentQuestionIndex] || [];
+                let disableNav = false;
 
-        function handleExplanationClick(btn) {
-            const index = parseInt(btn.dataset.questionIndex);
-            const explanationBox = document.querySelector(`#question-${index} .explanation-box`);
-            explanationBox.classList.toggle('visible');
-        }
+                // New rule: If a multi-choice question is partially answered, disable navigation.
+                if (question.isMultiChoice && selections.length > 0 && selections.length < question.correctAnswersCount) {
+                    disableNav = true;
+                }
 
-        function showQuestion(index, isInitialLoad = false) {
-            if (index < 0 || index >= questions.length) return;
+                prevBtn.disabled = state.currentQuestionIndex === 0 || disableNav;
+                nextBtn.disabled = state.currentQuestionIndex === questions.length - 1 || disableNav;
+                jumpToSelect.disabled = disableNav;
+                jumpToSelect.value = state.currentQuestionIndex;
 
-            const allQuestions = document.querySelectorAll('.question-container');
-            allQuestions.forEach(q => q.classList.add('hidden'));
+                if (state.isSubmitted) {
+                    scoreContainer.classList.remove('hidden');
+                    resetQuizBtn.classList.remove('hidden');
+                    submitQuizBtn.classList.add('hidden');
+                } else {
+                    scoreContainer.classList.add('hidden');
+                    resetQuizBtn.classList.add('hidden');
+                    if (checkAllQuestionsAnswered()) {
+                        submitQuizBtn.disabled = false;
+                        submitQuizBtn.classList.remove('hidden');
+                        nextBtn.classList.add('hidden');
+                    } else {
+                        submitQuizBtn.disabled = true;
+                        submitQuizBtn.classList.add('hidden');
+                        nextBtn.classList.remove('hidden');
+                    }
+                }
+            };
 
-            const newQuestionEl = document.getElementById(`question-${index}`);
-            if (newQuestionEl) newQuestionEl.classList.remove('hidden');
+            const calculateScore = () => {
+                let correctCount = 0;
+                questions.forEach((q, index) => {
+                    const selections = state.userSelections[index] || [];
+                    const correctAnswers = q.correctAnswers;
+                    const isCorrect = selections.length === correctAnswers.length && selections.every(sel => correctAnswers.includes(sel));
+                    if (isCorrect) {
+                        correctCount++;
+                    }
+                });
+                state.score = correctCount;
+                scoreEl.textContent = `${state.score} / ${questions.length}`;
+            };
 
-            currentQuestionIndex = index;
-            questionJumpEl.value = index;
+            const populateJumpTo = () => {
+                questions.forEach((q, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `Question ${index + 1}`;
+                    jumpToSelect.appendChild(option);
+                });
+            };
 
-            prevBtn.disabled = index === 0;
-            nextBtn.disabled = index === questions.length - 1;
+            const handleOptionClick = (e) => {
+                const button = e.target.closest('.option-btn');
+                if (!button || state.isSubmitted) return;
 
-            if (!isInitialLoad) {
+                handleFirstInteraction();
+
+                const question = questions[state.currentQuestionIndex];
+                const selectedOption = button.dataset.option;
+                let currentSelections = state.userSelections[state.currentQuestionIndex] || [];
+                
+                if (question.isMultiChoice) {
+                    if (currentSelections.includes(selectedOption)) {
+                        currentSelections = currentSelections.filter(opt => opt !== selectedOption);
+                    } else {
+                        if (currentSelections.length < question.correctAnswersCount) {
+                            currentSelections.push(selectedOption);
+                        }
+                    }
+                } else {
+                    if (currentSelections.includes(selectedOption)) {
+                        currentSelections = [];
+                    } else {
+                        currentSelections = [selectedOption];
+                    }
+                }
+                
+                state.userSelections[state.currentQuestionIndex] = currentSelections;
                 saveState();
-            }
-        }
+                renderQuestion();
+            };
 
-        function updateScoreboard() {
-            scoreboardEl.textContent = `Score: ${score} / ${questions.length}`;
-        }
-        
-        function showResetModal() {
-            resetConfirmOverlay.classList.remove('hidden');
-            resetConfirmModal.classList.remove('hidden');
-        }
-
-        function hideResetModal() {
-            resetConfirmOverlay.classList.add('hidden');
-            resetConfirmModal.classList.add('hidden');
-        }
-
-        function handleResetConfirmation() {
-            hideResetModal();
-            deleteCookie('quizState'); 
-            location.reload(); 
-        }
-        
-        // --- TIMER & INACTIVITY FUNCTIONS ---
-        function handleUserInteraction() {
-            if (!userHasInteracted) {
-                userHasInteracted = true;
-            }
-            clearTimeout(inactivityTimer);
-            startTimer();
-            inactivityTimer = setTimeout(stopTimer, 180000); 
-        }
-        
-        function startTimer() {
-            if (timerInterval || !userHasInteracted) return;
-            timerInterval = setInterval(() => {
-                totalSeconds++;
-                timerEl.textContent = formatTime(totalSeconds);
+            const handleSubmitQuizClick = () => {
+                if (!checkAllQuestionsAnswered()) return;
+                
+                stopTimer();
+                state.isSubmitted = true;
+                calculateScore();
                 saveState();
-            }, 1000);
-        }
+                renderQuestion();
+            };
 
-        function stopTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-        }
+            const handleExplanationClick = () => {
+                const explanationBox = document.getElementById('explanation-box');
+                const explanationBtn = document.getElementById('explanation-btn');
+                const isHidden = explanationBox.classList.contains('hidden');
 
-        function formatTime(seconds) {
-            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
-            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-            const s = (seconds % 60).toString().padStart(2, '0');
-            return `${h}:${m}:${s}`;
-        }
-        
-        // --- EVENT DISPATCHER ---
-        function dispatchInteraction(event) {
-            const target = event.target;
+                if (isHidden) {
+                    explanationBox.classList.remove('hidden');
+                    setTimeout(() => {
+                        explanationBox.classList.remove('opacity-0');
+                        explanationBox.style.transform = 'translateY(0)';
+                    }, 10);
+                    explanationBtn.textContent = 'Hide Explanation';
+                } else {
+                    explanationBox.classList.add('opacity-0');
+                    explanationBox.style.transform = 'translateY(-10px)';
+                    explanationBox.addEventListener('transitionend', () => {
+                        explanationBox.classList.add('hidden');
+                    }, { once: true });
+                    explanationBtn.textContent = 'Show Explanation';
+                }
+            };
             
-            const optionBtn = target.closest('.option-btn');
-            if (optionBtn) {
-                handleOptionSelect(optionBtn);
-                return;
-            }
+            const attachEventListenersToQuestion = () => {
+                quizContainer.querySelectorAll('.option-btn').forEach(btn => btn.addEventListener('click', handleOptionClick));
+                const explanationBtn = document.getElementById('explanation-btn');
+                if (explanationBtn) explanationBtn.addEventListener('click', handleExplanationClick);
+            };
 
-            const confirmBtn = target.closest('.confirm-btn');
-            if (confirmBtn) {
-                handleConfirm(confirmBtn);
-                return;
-            }
+            const navigate = (direction) => {
+                const newIndex = state.currentQuestionIndex + direction;
+                if (newIndex >= 0 && newIndex < questions.length) {
+                    state.currentQuestionIndex = newIndex;
+                    saveState();
+                    renderQuestion();
+                }
+            };
 
-            const explanationBtn = target.closest('.explanation-btn');
-            if (explanationBtn) {
-                handleExplanationClick(explanationBtn);
-                return;
-            }
+            const jumpToQuestion = (index) => {
+                state.currentQuestionIndex = parseInt(index, 10);
+                saveState();
+                renderQuestion();
+            };
 
-            if (target.id === 'prev-btn') {
-                 showQuestion(currentQuestionIndex - 1);
-            } else if (target.id === 'next-btn') {
-                 showQuestion(currentQuestionIndex + 1);
-            } else if (target.id === 'question-jump') {
-                showQuestion(parseInt(target.value));
-            }
-        }
+            const resetQuiz = () => {
+                eraseCookie(cookie_name);
+                window.location.reload();
+            };
+
+            // --- INITIALIZATION ---
+            const init = () => {
+                if (!getCookie('gdprAccepted')) {
+                    gdprModal.classList.remove('hidden');
+                }
+
+                acceptGdprBtn.addEventListener('click', () => {
+                    setCookie('gdprAccepted', true, 365);
+                    gdprModal.classList.add('hidden');
+                });
+
+                loadState();
+                
+                populateJumpTo();
+                renderQuestion();
+                timerEl.textContent = formatTime(state.totalSeconds);
+
+                prevBtn.addEventListener('click', () => navigate(-1));
+                nextBtn.addEventListener('click', () => navigate(1));
+                jumpToSelect.addEventListener('change', (e) => jumpToQuestion(e.target.value));
+                submitQuizBtn.addEventListener('click', handleSubmitQuizClick);
+
+                resetQuizBtn.addEventListener('click', () => resetModal.classList.remove('hidden'));
+                cancelResetBtn.addEventListener('click', () => resetModal.classList.add('hidden'));
+                confirmResetBtn.addEventListener('click', () => {
+                    resetModal.classList.add('hidden');
+                    resetQuiz();
+                });
+
+                document.body.addEventListener('click', handleFirstInteraction, { once: true });
+                document.body.addEventListener('keydown', handleFirstInteraction, { once: true });
+            };
+
+            init();
+        });
     </script>
 </body>
 </html>
