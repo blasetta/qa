@@ -23,7 +23,7 @@
     <div id="gdpr-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
             <h3 class="text-xl font-bold mb-4">Cookie Consent</h3>
-            <p class="mb-6">We use a single functional cookie to save your quiz progress. This allows you to pick up where you left off. By clicking "Accept and Continue," you agree to the use of this cookie.</p>
+            <p class="mb-6">We use a single functional cookie to manage your consent. Your quiz progress is saved in your browser's local storage.</p>
             <button id="accept-gdpr" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">Accept and Continue</button>
         </div>
     </div>
@@ -75,7 +75,7 @@
 
     <script>
         const main_title = "AWS SysOps Test Quiz";
-        const cookie_name = main_title.replace(/\s+/g, '_'); // Create a valid cookie name
+        const state_key = main_title.replace(/\s+/g, '_'); // Create a valid key for local storage
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('main-title').textContent = main_title;
             document.getElementById('header-title').textContent = main_title;
@@ -115,7 +115,7 @@
             const cancelResetBtn = document.getElementById('cancel-reset');
             const confirmResetBtn = document.getElementById('confirm-reset');
 
-            // --- COOKIE HELPERS ---
+            // --- GDPR COOKIE HELPERS ---
             const setCookie = (name, value, days) => {
                 let expires = "";
                 if (days) {
@@ -123,7 +123,7 @@
                     date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
                     expires = "; expires=" + date.toUTCString();
                 }
-                document.cookie = name + "=" + (JSON.stringify(value) || "") + expires + "; path=/; SameSite=Lax";
+                document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
             };
 
             const getCookie = (name) => {
@@ -133,18 +133,10 @@
                     let c = ca[i];
                     while (c.charAt(0) === ' ') c = c.substring(1, c.length);
                     if (c.indexOf(nameEQ) === 0) {
-                        try {
-                            return JSON.parse(c.substring(nameEQ.length, c.length));
-                        } catch (e) {
-                            return c.substring(nameEQ.length, c.length);
-                        }
+                        return c.substring(nameEQ.length, c.length);
                     }
                 }
                 return null;
-            };
-
-            const eraseCookie = (name) => {
-                document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
             };
 
             // --- TIMER LOGIC ---
@@ -195,12 +187,13 @@
 
             // --- QUIZ LOGIC ---
             const saveState = () => {
-                setCookie(cookie_name, state, 7); // Save for 7 days
+                localStorage.setItem(state_key, JSON.stringify(state));
             };
 
             const loadState = () => {
-                const savedState = getCookie(cookie_name);
-                if (savedState) {
+                const savedStateJSON = localStorage.getItem(state_key);
+                if (savedStateJSON) {
+                    const savedState = JSON.parse(savedStateJSON);
                     Object.assign(state, savedState);
                     if(state.timerActive && !state.isSubmitted) {
                        startTimer();
@@ -481,7 +474,7 @@
             };
 
             const resetQuiz = () => {
-                eraseCookie(cookie_name);
+                localStorage.removeItem(state_key);
                 window.location.reload();
             };
 
@@ -492,7 +485,7 @@
                 }
 
                 acceptGdprBtn.addEventListener('click', () => {
-                    setCookie('gdprAccepted', true, 365);
+                    setCookie('gdprAccepted', 'true', 365);
                     gdprModal.classList.add('hidden');
                 });
 
