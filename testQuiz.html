@@ -419,6 +419,19 @@
                     stopTimer();
                     state.isSubmitted = true;
                     calculateScore();
+                    
+                    // Save results to local storage
+                    const now = new Date();
+                    const resultKey = now.toISOString();
+                    const resultData = {
+                        main_title: main_title,
+                        date: resultKey,
+                        totalQuestions: questions.length,
+                        rightAnswers: state.score,
+                        totalTime: state.totalSeconds
+                    };
+                    localStorage.setItem(resultKey, JSON.stringify(resultData));
+
                     saveState();
                     renderQuestion();
                 }
