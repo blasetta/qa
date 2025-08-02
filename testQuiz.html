@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AWS Technical Quiz</title>
+    <title id="main-title">AWS Technical Quiz</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -43,17 +43,17 @@
     <div class="container mx-auto p-4 md:p-8 max-w-4xl">
         <!-- Header -->
         <header class="bg-white p-4 rounded-xl shadow-md mb-8 flex flex-wrap items-center justify-between gap-4">
-            <h1 class="text-2xl md:text-3xl font-bold text-blue-800">AWS Technical Quiz</h1>
+            <h1 id="header-title" class="text-2xl md:text-3xl font-bold text-blue-800">AWS Technical Quiz</h1>
             <div class="flex items-center space-x-4">
                 <div id="score-container" class="text-lg font-medium hidden">
                     <span class="font-bold">Score:</span>
                     <span id="score">0 / 5</span>
                 </div>
-                <div class="text-lg font-medium">
+                <div class="text-sm font-medium">
                     <span class="font-bold">Time:</span>
                     <span id="timer">00:00:00</span>
                 </div>
-                <button id="reset-quiz-btn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors hidden">Reset Quiz</button>
+                <button id="header-action-btn" class="bg-green-600 text-sm text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">Submit Quiz</button>
             </div>
         </header>
 
@@ -69,13 +69,16 @@
                 <label for="jump-to" class="font-medium">Jump to:</label>
                 <select id="jump-to" class="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-200 disabled:cursor-not-allowed"></select>
             </div>
-            <button id="submit-quiz-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hidden">Submit Quiz</button>
             <button id="next-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">Next</button>
         </footer>
     </div>
 
     <script>
+        const main_title = "AWS SysOps Test Quiz";
+        const cookie_name = main_title.replace(/\s+/g, '_'); // Create a valid cookie name
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('main-title').textContent = main_title;
+            document.getElementById('header-title').textContent = main_title;
             // --- DATA ---
             const questions = [
                 { "number": 1, "title": "EC2 Connectivity Timeout", "scenario": "You have launched an Amazon EC2 instance into a public subnet. When you try to connect to it via SSH from your corporate network, the connection times out. The instance's security group allows inbound traffic on port 22 from your company's IP address range. The subnet's network ACL (NACL) has the default settings.", "questionText": "What is the most likely cause of the connectivity issue?", "isMultiChoice": false, "options": { "A": "The route table associated with the subnet does not have a route to an Internet Gateway.", "B": "The instance was not assigned a public IP address upon launch.", "C": "The NACL is blocking outbound traffic on ephemeral ports.", "D": "The security group is stateful and does not require an outbound rule." }, "correctAnswers": ["A"], "explanation": "A connection timeout typically points to a networking issue. If the security group and NACL are correctly configured for inbound traffic, the problem often lies in the return path. An EC2 instance in a public subnet needs a route to an Internet Gateway (IGW) in its subnet's route table to communicate with the internet. Without it, SSH responses cannot be sent back to the client, causing a timeout.", "wrongExplanation": "While other options can cause issues, the lack of an IGW route is the most common reason for timeouts when inbound rules are correct. A missing public IP would result in a 'host not found' error, not a timeout. The default NACL allows all outbound traffic. Security groups being stateful is a feature, not a problem.", "level": 1 },
@@ -105,8 +108,7 @@
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
             const jumpToSelect = document.getElementById('jump-to');
-            const submitQuizBtn = document.getElementById('submit-quiz-btn');
-            const resetQuizBtn = document.getElementById('reset-quiz-btn');
+            const headerActionBtn = document.getElementById('header-action-btn');
             const gdprModal = document.getElementById('gdpr-modal');
             const acceptGdprBtn = document.getElementById('accept-gdpr');
             const resetModal = document.getElementById('reset-modal');
@@ -193,11 +195,11 @@
 
             // --- QUIZ LOGIC ---
             const saveState = () => {
-                setCookie('quizState', state, 7); // Save for 7 days
+                setCookie(cookie_name, state, 7); // Save for 7 days
             };
 
             const loadState = () => {
-                const savedState = getCookie('quizState');
+                const savedState = getCookie(cookie_name);
                 if (savedState) {
                     Object.assign(state, savedState);
                     if(state.timerActive && !state.isSubmitted) {
@@ -245,10 +247,10 @@
                     const isCurrentCompleted = selections.length >= requiredCount;
                     
                     if (isCurrentCompleted) {
-                        completionStatusHtml = `<span class="font-semibold px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">Completed (${completedCount}/${totalQuestions})</span>`;
+                        completionStatusHtml = `<span class="font-semibold px-3 py-2 rounded-full bg-green-100 text-green-800 text-xs">Completed (${completedCount}/${totalQuestions})</span>`;
                     } else {
                         const remainingCount = totalQuestions - completedCount;
-                        completionStatusHtml = `<span class="font-semibold px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">To complete (${remainingCount}/${totalQuestions})</span>`;
+                        completionStatusHtml = `<span class="font-semibold px-3 py-2 rounded-full bg-yellow-100 text-yellow-800 text-xs">To complete (${remainingCount}/${totalQuestions})</span>`;
                     }
                 }
 
@@ -306,7 +308,7 @@
                     </div>
                 `;
 
-                updateNavigation();
+                updateHeaderAndFooter();
                 attachEventListenersToQuestion();
             };
             
@@ -323,13 +325,12 @@
                 return Object.keys(state.userSelections).length === questions.length;
             };
 
-            const updateNavigation = () => {
+            const updateHeaderAndFooter = () => {
                 const question = questions[state.currentQuestionIndex];
                 const selections = state.userSelections[state.currentQuestionIndex] || [];
                 let disableNav = false;
 
-                // New rule: If a multi-choice question is partially answered, disable navigation.
-                if (question.isMultiChoice && selections.length > 0 && selections.length < question.correctAnswersCount) {
+                if (!state.isSubmitted && question.isMultiChoice && selections.length > 0 && selections.length < question.correctAnswersCount) {
                     disableNav = true;
                 }
 
@@ -340,20 +341,16 @@
 
                 if (state.isSubmitted) {
                     scoreContainer.classList.remove('hidden');
-                    resetQuizBtn.classList.remove('hidden');
-                    submitQuizBtn.classList.add('hidden');
+                    headerActionBtn.textContent = 'Reset Quiz';
+                    headerActionBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    headerActionBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                    headerActionBtn.disabled = false;
                 } else {
                     scoreContainer.classList.add('hidden');
-                    resetQuizBtn.classList.add('hidden');
-                    if (checkAllQuestionsAnswered()) {
-                        submitQuizBtn.disabled = false;
-                        submitQuizBtn.classList.remove('hidden');
-                        nextBtn.classList.add('hidden');
-                    } else {
-                        submitQuizBtn.disabled = true;
-                        submitQuizBtn.classList.add('hidden');
-                        nextBtn.classList.remove('hidden');
-                    }
+                    headerActionBtn.textContent = 'Submit Quiz';
+                    headerActionBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    headerActionBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    headerActionBtn.disabled = !checkAllQuestionsAnswered();
                 }
             };
 
@@ -411,14 +408,20 @@
                 renderQuestion();
             };
 
-            const handleSubmitQuizClick = () => {
-                if (!checkAllQuestionsAnswered()) return;
-                
-                stopTimer();
-                state.isSubmitted = true;
-                calculateScore();
-                saveState();
-                renderQuestion();
+            const handleHeaderActionClick = () => {
+                if (state.isSubmitted) {
+                    // It's a "Reset Quiz" button
+                    resetModal.classList.remove('hidden');
+                } else {
+                    // It's a "Submit Quiz" button
+                    if (!checkAllQuestionsAnswered()) return;
+                    
+                    stopTimer();
+                    state.isSubmitted = true;
+                    calculateScore();
+                    saveState();
+                    renderQuestion();
+                }
             };
 
             const handleExplanationClick = () => {
@@ -465,7 +468,7 @@
             };
 
             const resetQuiz = () => {
-                eraseCookie('quizState');
+                eraseCookie(cookie_name);
                 window.location.reload();
             };
 
@@ -489,9 +492,8 @@
                 prevBtn.addEventListener('click', () => navigate(-1));
                 nextBtn.addEventListener('click', () => navigate(1));
                 jumpToSelect.addEventListener('change', (e) => jumpToQuestion(e.target.value));
-                submitQuizBtn.addEventListener('click', handleSubmitQuizClick);
+                headerActionBtn.addEventListener('click', handleHeaderActionClick);
 
-                resetQuizBtn.addEventListener('click', () => resetModal.classList.remove('hidden'));
                 cancelResetBtn.addEventListener('click', () => resetModal.classList.add('hidden'));
                 confirmResetBtn.addEventListener('click', () => {
                     resetModal.classList.add('hidden');
